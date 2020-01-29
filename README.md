@@ -14,6 +14,11 @@ Proxies [Puppeteer](https://github.com/puppeteer/puppeteer) Page requests.
 
 puppeteer-proxy intercepts requests after it receives the request metadata from Puppeteer. puppeteer-proxy uses Node.js to make the HTTP requests. The response is then returned to the browser. When using puppeteer-proxy, browser never makes outbound HTTP requests.
 
+<a name="puppeteer-proxy-setup"></a>
+## Setup
+
+You must call [`page.setRequestInterception(true)`](https://pptr.dev/#?product=Puppeteer&version=v2.1.0&show=api-pagesetrequestinterceptionvalue) before using `pageProxy.proxyRequest`.
+
 <a name="puppeteer-proxy-api"></a>
 ## API
 
