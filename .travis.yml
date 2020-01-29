@@ -6,7 +6,7 @@ node_js:
 env:
   - NODE_TLS_REJECT_UNAUTHORIZED=0
 script:
-  - npx anyproxy-ca
+  - npx anyproxy-ca -g
   - npm run lint
   - npm run test
   - nyc --silent npm run test
