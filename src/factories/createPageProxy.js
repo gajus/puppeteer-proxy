@@ -14,6 +14,7 @@ import {
 } from 'set-cookie-parser';
 import type {
   PageProxyConfigurationType,
+  PageProxyType,
 } from '../types';
 import Logger from '../Logger';
 
