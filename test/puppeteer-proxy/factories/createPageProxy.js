@@ -95,3 +95,6 @@ test('sets cookies for the succeeding proxy requests', async (t) => {
 
   t.is(requestHandler.callCount, 2);
 });
+
+// eslint-disable-next-line ava/no-todo-test
+test.todo('inherits cookies from Page object');
