@@ -8,6 +8,10 @@
 
 Proxies Puppeteer Page requests.
 
+## Implementation
+
+puppeteer-proxy intercepts requests after it receives the request metadata from Puppeteer. puppeteer-proxy uses Node.js to make the HTTP requests. The response is then returned to the browser. When using puppeteer-proxy, browser never makes outbound HTTP requests.
+
 ## API
 
 ```js
