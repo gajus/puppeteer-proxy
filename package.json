@@ -23,6 +23,7 @@
     "https-proxy-agent": "4",
     "puppeteer": "^2.1.0",
     "roarr": "^2.14.6",
+    "serialize-error": "^5.0.0",
     "set-cookie-parser": "^2.4.3",
     "tough-cookie": "^3.0.1"
   },

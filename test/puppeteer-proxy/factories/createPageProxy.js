@@ -2,6 +2,7 @@
 
 import test from 'ava';
 import sinon from 'sinon';
+import getPort from 'get-port';
 import createPageProxy from '../../../src/factories/createPageProxy';
 import createHttpProxyServer from '../../helpers/createHttpProxyServer';
 import createHttpServer from '../../helpers/createHttpServer';
@@ -54,6 +55,27 @@ test('proxies a GET request', async (t) => {
   });
 
   t.true(requestHandler.called);
+});
+
+test('handles HTTP errors (unreachable server)', async (t) => {
+  t.plan(2);
+
+  await createPage(async (page) => {
+    const pageProxy = createPageProxy({
+      page,
+      proxyUrl: 'http://127.0.0.1:' + await getPort(),
+    });
+
+    await page.setRequestInterception(true);
+
+    page.once('request', async (request) => {
+      await pageProxy.proxyRequest(request);
+    });
+
+    const error = await t.throwsAsync(page.goto('http://127.0.0.1'));
+
+    t.is(error.message, 'net::ERR_FAILED at http://127.0.0.1');
+  });
 });
 
 test('sets cookies for the succeeding proxy requests', async (t) => {

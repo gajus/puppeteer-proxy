@@ -7,6 +7,9 @@ import {
 import type {
   Request,
 } from 'puppeteer';
+import {
+  serializeError,
+} from 'serialize-error';
 import HttpProxyAgent from 'http-proxy-agent';
 import HttpsProxyAgent from 'https-proxy-agent';
 import {
@@ -40,13 +43,31 @@ export default (configuration: PageProxyConfigurationType): PageProxyType => {
 
     const agent = new AgentConstructor(proxyUrl);
 
-    const response = await got(request.url(), {
-      agent,
-      body: request.postData(),
-      cookieJar,
-      headers: request.headers(),
-      method: request.method(),
-    });
+    let response;
+
+    try {
+      response = await got(request.url(), {
+        agent,
+        body: request.postData(),
+        cookieJar,
+        headers: request.headers(),
+        method: request.method(),
+        retry: 0,
+        throwHttpErrors: false,
+      });
+    } catch (error) {
+      log.error({
+        error: serializeError(error),
+      }, 'could not complete HTTP request due to an error');
+
+      request.abort();
+
+      return;
+    }
+
+    if (!response) {
+      throw new Error('response object is not present.');
+    }
 
     const setCookieHeaders = response.headers['set-cookie'] || [];
 
