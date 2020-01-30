@@ -12,6 +12,7 @@ Proxies [Puppeteer](https://github.com/puppeteer/puppeteer) Page requests.
 * Allows to authenticate using http://username:password@proxy schema.
 * Handles cookies.
 * Handles binary files.
+* Supports custom [HTTP(S) agents](https://nodejs.org/api/http.html#http_class_http_agent).
 
 ## Motivation
 
@@ -35,6 +36,12 @@ You must call [`page.setRequestInterception(true)`](https://pptr.dev/#?product=P
 ## API
 
 ```js
+import {
+  Agent as HttpAgent,
+} from 'http';
+import {
+  Agent as HttpsAgent,
+} from 'https';
 import type {
   Page,
   Request,
@@ -51,10 +58,12 @@ type PageProxyConfigurationType = {|
 |};
 
 /**
+ * @property agent HTTP(s) agent to use when making the request.
  * @property proxyUrl HTTP proxy URL. A different proxy can be set for each request.
  * @property request Instance of Puppeteer Request.
  */
 type ProxyRequestConfigurationType = {|
+  +agent?: HttpAgent | HttpsAgent,
   +proxyUrl: string,
   +request: Request,
 |};
@@ -68,6 +77,8 @@ createPageProxy(configuration: PageProxyConfigurationType): PageProxyType;
 ```
 
 ## Usage
+
+### Making a GET request using proxy
 
 ```js
 import puppeteer from 'puppeteer';

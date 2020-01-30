@@ -2,6 +2,12 @@
 
 /* eslint-disable import/exports-last */
 
+import {
+  Agent as HttpAgent,
+} from 'http';
+import {
+  Agent as HttpsAgent,
+} from 'https';
 import type {
   Page,
   Request,
@@ -15,12 +21,14 @@ export type PageProxyConfigurationType = {|
 |};
 
 /**
- * @property request Instance of Puppeteer Request.
+ * @property agent HTTP(s) agent to use when making the request.
  * @property proxyUrl HTTP proxy URL. A different proxy can be set for each request.
+ * @property request Instance of Puppeteer Request.
  */
 export type ProxyRequestConfigurationType = {|
-  +request: Request,
+  +agent?: HttpAgent | HttpsAgent,
   +proxyUrl: string,
+  +request: Request,
 |};
 
 export type PageProxyType = {|

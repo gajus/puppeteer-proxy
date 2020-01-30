@@ -46,9 +46,15 @@ export default (pageProxyConfiguration: PageProxyConfigurationType): PageProxyTy
       ),
     );
 
-    const AgentConstructor = proxyUrl.toLowerCase().startsWith('https://') ? HttpsProxyAgent : HttpProxyAgent;
+    let agent;
 
-    const agent = new AgentConstructor(proxyUrl);
+    if (proxyRequestConfiguration.agent) {
+      agent = proxyRequestConfiguration.agent;
+    } else if (proxyUrl.toLowerCase().startsWith('https://')) {
+      agent = new HttpsProxyAgent(proxyUrl);
+    } else {
+      agent = new HttpProxyAgent(proxyUrl);
+    }
 
     let response;
 
