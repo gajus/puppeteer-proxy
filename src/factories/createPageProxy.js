@@ -19,7 +19,6 @@ import type {
 } from '../types';
 import Logger from '../Logger';
 import createToughCookiePayloadFromPuppeteerCookies from './createToughCookiePayloadFromPuppeteerCookies';
-import createPuppeteerCookiesFromToughCookiePayload from './createPuppeteerCookiesFromToughCookiePayload';
 
 const log = Logger.child({
   namespace: 'createPageProxy',
@@ -110,10 +109,6 @@ export default (pageProxyConfiguration: PageProxyConfigurationType): PageProxyTy
     if (!response) {
       throw new Error('response object is not present.');
     }
-
-    await page.setCookie(
-      ...createPuppeteerCookiesFromToughCookiePayload(cookieJar.serializeSync()),
-    );
 
     await request.respond({
       body: response.body,
