@@ -69,7 +69,7 @@ type PageProxyConfigurationType = {|
  */
 type ProxyRequestConfigurationType = {|
   +agent?: HttpAgent | HttpsAgent,
-  +proxyUrl: string,
+  +proxyUrl?: string,
   +request: Request,
 |};
 
