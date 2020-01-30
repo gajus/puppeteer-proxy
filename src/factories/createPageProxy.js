@@ -1,5 +1,8 @@
 // @flow
 
+import type {
+  Request,
+} from 'puppeteer';
 import got from 'got';
 import {
   CookieJar,
@@ -13,7 +16,6 @@ import {
   getAllCookies,
 } from '../routines';
 import type {
-  HeadersType,
   PageProxyConfigurationType,
   PageProxyType,
 } from '../types';
@@ -26,23 +28,36 @@ const log = Logger.child({
 
 const defaultChromeHeaders = {
   accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-  'accept-encoding': 'gzip, deflate',
+  'accept-encoding': 'gzip, deflate, br',
   'accept-language': 'en',
-  'cache-control': 'no-cache',
-  connection: 'keep-alive',
-  dnt: '1',
-  pragma: 'no-cache',
 };
 
 /**
  * @see https://github.com/puppeteer/puppeteer/issues/5364
  */
-const appendDefaultChromeHeaders = (requestHeaders: HeadersType, requestUrl: string) => {
-  return {
-    ...requestHeaders,
+const appendDefaultChromeHeaders = (request: Request) => {
+  let nextHeaders = {
+    ...request.headers(),
     ...defaultChromeHeaders,
-    host: new URL(requestUrl).hostname,
+    host: new URL(request.url()).hostname,
   };
+
+  if (request.isNavigationRequest()) {
+    nextHeaders = {
+      ...nextHeaders,
+      'sec-fetch-mode': 'navigate',
+      'sec-fetch-site': 'none',
+      'sec-fetch-user': '?1',
+    };
+  } else {
+    nextHeaders = {
+      ...nextHeaders,
+      'sec-fetch-mode': 'no-cors',
+      'sec-fetch-site': 'same-origin',
+    };
+  }
+
+  return nextHeaders;
 };
 
 export default (pageProxyConfiguration: PageProxyConfigurationType): PageProxyType => {
@@ -54,10 +69,7 @@ export default (pageProxyConfiguration: PageProxyConfigurationType): PageProxyTy
       request,
     } = proxyRequestConfiguration;
 
-    const headers = appendDefaultChromeHeaders(
-      request.headers(),
-      request.url(),
-    );
+    const headers = appendDefaultChromeHeaders(request);
 
     log.debug({
       body: request.postData(),
