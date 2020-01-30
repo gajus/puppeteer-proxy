@@ -21,7 +21,6 @@
     "got": "^10.3.0",
     "http-proxy-agent": "^4.0.0",
     "https-proxy-agent": "4",
-    "puppeteer": "^2.1.0",
     "roarr": "^2.14.6",
     "serialize-error": "^5.0.0",
     "tough-cookie": "^3.0.1"
@@ -49,6 +48,7 @@
     "husky": "^4.2.1",
     "nyc": "^15.0.0",
     "pem": "^1.14.4",
+    "puppeteer": "^2.1.0",
     "semantic-release": "^17.0.1",
     "sinon": "^8.1.1"
   },
