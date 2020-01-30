@@ -11,7 +11,7 @@ export default (cookies: $ReadOnlyArray<PuppeteerCookieType>): ToughCookiePayloa
       return {
         creation: new Date().toISOString(),
         domain: cookie.domain,
-        expires: cookie.expires === -1 ? Infinity : new Date(cookie.expires).toISOString(),
+        expires: cookie.expires === -1 ? Infinity : new Date(cookie.expires * 1000).toISOString(),
         hostOnly: true,
         httpOnly: cookie.httpOnly,
         key: cookie.name,

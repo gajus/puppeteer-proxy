@@ -9,7 +9,7 @@ export default (cookieJar: ToughCookiePayloadType): $ReadOnlyArray<PuppeteerCook
   return cookieJar.cookies.map((cookie) => {
     return {
       domain: cookie.domain,
-      expires: cookie.expires ? new Date(cookie.expires).getTime() / 1000 : Date.now() / 1000 + 60 * 60,
+      expires: cookie.expires ? Math.round(new Date(cookie.expires).getTime() / 1000) : -1,
       httpOnly: cookie.httpOnly,
       name: cookie.key,
       path: cookie.path,

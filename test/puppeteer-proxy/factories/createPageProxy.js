@@ -8,6 +8,8 @@ import createHttpProxyServer from '../../helpers/createHttpProxyServer';
 import createHttpServer from '../../helpers/createHttpServer';
 import createPage from '../../helpers/createPage';
 
+const MINUTE = 60 * 1000;
+
 const proxyRequest = (page, pageProxy) => {
   page.on('request', async (request) => {
     try {
@@ -19,6 +21,10 @@ const proxyRequest = (page, pageProxy) => {
       request.abort();
     }
   });
+};
+
+const roundToMinute = (time: number): number => {
+  return Math.round(time / MINUTE) * MINUTE;
 };
 
 test('makes a HTTP request (without proxy)', async (t) => {
@@ -141,6 +147,52 @@ test('sets cookies for the succeeding proxy requests', async (t) => {
   t.is(requestHandler.callCount, 2);
 });
 
+test('sets cookies for the succeeding proxy requests (correctly handles cookie expiration)', async (t) => {
+  t.plan(4);
+
+  const cookieExpirationDate = new Date(roundToMinute(Date.now() + 60 * MINUTE));
+
+  const requestHandler = sinon.stub()
+    .onCall(0)
+    .callsFake((incomingRequest, outgoingRequest) => {
+      outgoingRequest.setHeader('set-cookie', 'foo=bar; expires=' + cookieExpirationDate.toUTCString());
+      outgoingRequest.end('foo');
+    })
+    .onCall(1)
+    .callsFake((incomingRequest, outgoingRequest) => {
+      t.is(incomingRequest.headers.cookie, 'foo=bar');
+
+      outgoingRequest.end('bar');
+    });
+
+  const httpServer = await createHttpServer(requestHandler);
+
+  const httpProxyServer = await createHttpProxyServer();
+
+  await createPage(async (page) => {
+    const pageProxy = createPageProxy({
+      page,
+      proxyUrl: httpProxyServer.url,
+    });
+
+    await page.setRequestInterception(true);
+
+    proxyRequest(page, pageProxy);
+
+    t.deepEqual(await page.cookies(), []);
+
+    await page.goto(httpServer.url);
+
+    const firstCookie = (await page.cookies())[0];
+
+    t.is(roundToMinute(firstCookie.expires * 1000), roundToMinute(cookieExpirationDate.getTime()));
+
+    await page.goto(httpServer.url);
+  });
+
+  t.is(requestHandler.callCount, 2);
+});
+
 test('inherits cookies from Page object', async (t) => {
   t.plan(2);
 
@@ -159,6 +211,46 @@ test('inherits cookies from Page object', async (t) => {
   await createPage(async (page) => {
     await page.setCookie({
       domain: 'localhost',
+      name: 'foo',
+      value: 'bar',
+    });
+
+    const pageProxy = createPageProxy({
+      page,
+      proxyUrl: httpProxyServer.url,
+    });
+
+    await page.setRequestInterception(true);
+
+    proxyRequest(page, pageProxy);
+
+    await page.goto(httpServer.url);
+  });
+
+  t.is(requestHandler.callCount, 1);
+});
+
+test('inherits cookies from Page object (correctly handles cookie expiration)', async (t) => {
+  t.plan(2);
+
+  const cookieExpirationDate = new Date(roundToMinute(Date.now() + 60 * MINUTE));
+
+  const requestHandler = sinon
+    .stub()
+    .callsFake((incomingRequest, outgoingRequest) => {
+      t.is(incomingRequest.headers.cookie, 'foo=bar');
+
+      outgoingRequest.end('foo');
+    });
+
+  const httpServer = await createHttpServer(requestHandler);
+
+  const httpProxyServer = await createHttpProxyServer();
+
+  await createPage(async (page) => {
+    await page.setCookie({
+      domain: 'localhost',
+      expires: cookieExpirationDate / 1000,
       name: 'foo',
       value: 'bar',
     });
