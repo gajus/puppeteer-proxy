@@ -9,11 +9,13 @@ import type {
 
 export type PageProxyConfigurationType = {|
   +page: Page,
-  +proxyUrl: string,
 |};
 
 export type PageProxyType = {|
-  +proxyRequest: (request: Request) => Promise<void>,
+  +proxyRequest: (
+    request: Request,
+    proxyUrl: string,
+  ) => Promise<void>,
 |};
 
 /**

@@ -29,15 +29,20 @@ import {
 
 /**
  * @property page Instance of Puppeteer Page.
- * @property proxyUrl Proxy URL.
  */
 type PageProxyConfigurationType = {|
   +page: Page,
-  +proxyUrl: string,
 |};
 
 type PageProxyType = {|
-  +proxyRequest: (request: Request) => Promise<void>,
+  /**
+   * @param request Instance of Puppeteer Request.
+   * @param proxyUrl HTTP proxy URL. A different proxy can be set for each request.
+   */
+  +proxyRequest: (
+    request: Request,
+    proxyUrl: string,
+  ) => Promise<void>,
 |};
 
 createPageProxy(configuration: PageProxyConfigurationType): PageProxyType;

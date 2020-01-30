@@ -10,10 +10,10 @@ import createPage from '../../helpers/createPage';
 
 const MINUTE = 60 * 1000;
 
-const proxyRequest = (page, pageProxy) => {
+const proxyRequest = (page, pageProxy, proxyUrl) => {
   page.on('request', async (request) => {
     try {
-      await pageProxy.proxyRequest(request);
+      await pageProxy.proxyRequest(request, proxyUrl);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log('proxy request error', error);
@@ -59,12 +59,15 @@ test('proxies a GET request', async (t) => {
   await createPage(async (page) => {
     const pageProxy = createPageProxy({
       page,
-      proxyUrl: httpProxyServer.url,
     });
 
     await page.setRequestInterception(true);
 
-    proxyRequest(page, pageProxy);
+    proxyRequest(
+      page,
+      pageProxy,
+      httpProxyServer.url,
+    );
 
     const response = await page.goto(httpServer.url);
 
@@ -80,12 +83,15 @@ test('handles HTTP errors (unreachable server)', async (t) => {
   await createPage(async (page) => {
     const pageProxy = createPageProxy({
       page,
-      proxyUrl: 'http://127.0.0.1:' + await getPort(),
     });
 
     await page.setRequestInterception(true);
 
-    proxyRequest(page, pageProxy);
+    proxyRequest(
+      page,
+      pageProxy,
+      'http://127.0.0.1:' + await getPort(),
+    );
 
     const error = await t.throwsAsync(page.goto('http://127.0.0.1'));
 
@@ -116,12 +122,15 @@ test('sets cookies for the succeeding proxy requests', async (t) => {
   await createPage(async (page) => {
     const pageProxy = createPageProxy({
       page,
-      proxyUrl: httpProxyServer.url,
     });
 
     await page.setRequestInterception(true);
 
-    proxyRequest(page, pageProxy);
+    proxyRequest(
+      page,
+      pageProxy,
+      httpProxyServer.url,
+    );
 
     t.deepEqual(await page.cookies(), []);
 
@@ -172,12 +181,15 @@ test('sets cookies for the succeeding proxy requests (correctly handles cookie e
   await createPage(async (page) => {
     const pageProxy = createPageProxy({
       page,
-      proxyUrl: httpProxyServer.url,
     });
 
     await page.setRequestInterception(true);
 
-    proxyRequest(page, pageProxy);
+    proxyRequest(
+      page,
+      pageProxy,
+      httpProxyServer.url,
+    );
 
     t.deepEqual(await page.cookies(), []);
 
@@ -217,12 +229,15 @@ test('inherits cookies from Page object', async (t) => {
 
     const pageProxy = createPageProxy({
       page,
-      proxyUrl: httpProxyServer.url,
     });
 
     await page.setRequestInterception(true);
 
-    proxyRequest(page, pageProxy);
+    proxyRequest(
+      page,
+      pageProxy,
+      httpProxyServer.url,
+    );
 
     await page.goto(httpServer.url);
   });
@@ -257,12 +272,15 @@ test('inherits cookies from Page object (correctly handles cookie expiration)', 
 
     const pageProxy = createPageProxy({
       page,
-      proxyUrl: httpProxyServer.url,
     });
 
     await page.setRequestInterception(true);
 
-    proxyRequest(page, pageProxy);
+    proxyRequest(
+      page,
+      pageProxy,
+      httpProxyServer.url,
+    );
 
     await page.goto(httpServer.url);
   });

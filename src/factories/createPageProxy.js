@@ -29,9 +29,8 @@ const log = Logger.child({
 
 export default (configuration: PageProxyConfigurationType): PageProxyType => {
   const page = configuration.page;
-  const proxyUrl = configuration.proxyUrl;
 
-  const proxyRequest = async (request: Request) => {
+  const proxyRequest = async (request: Request, proxyUrl: string) => {
     log.debug({
       body: request.postData(),
       headers: request.headers(),
