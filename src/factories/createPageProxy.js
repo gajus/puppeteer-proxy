@@ -13,9 +13,6 @@ import {
 import HttpProxyAgent from 'http-proxy-agent';
 import HttpsProxyAgent from 'https-proxy-agent';
 import {
-  parseString,
-} from 'set-cookie-parser';
-import {
   getAllCookies,
 } from '../routines';
 import type {
