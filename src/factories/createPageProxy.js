@@ -53,18 +53,8 @@ export default (pageProxyConfiguration: PageProxyConfigurationType): PageProxyTy
     let response;
 
     try {
-      console.log('>>>', request.url(), {
-        // agent,
-        body: request.postData(),
-        cookieJar,
-        headers: request.headers(),
-        method: request.method(),
-        retry: 0,
-        throwHttpErrors: false,
-      });
-
       response = await got(request.url(), {
-        // agent,
+        agent,
         body: request.postData(),
         cookieJar,
         headers: request.headers(),
