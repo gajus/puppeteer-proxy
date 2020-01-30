@@ -7,15 +7,24 @@ import type {
   Request,
 } from 'puppeteer';
 
+/**
+ * @property page Instance of Puppeteer Page.
+ */
 export type PageProxyConfigurationType = {|
   +page: Page,
 |};
 
+/**
+ * @property request Instance of Puppeteer Request.
+ * @property proxyUrl HTTP proxy URL. A different proxy can be set for each request.
+ */
+export type ProxyRequestConfigurationType = {|
+  +request: Request,
+  +proxyUrl: string,
+|};
+
 export type PageProxyType = {|
-  +proxyRequest: (
-    request: Request,
-    proxyUrl: string,
-  ) => Promise<void>,
+  +proxyRequest: (configuration: ProxyRequestConfigurationType) => Promise<void>,
 |};
 
 /**

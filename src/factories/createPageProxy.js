@@ -4,9 +4,6 @@ import got from 'got';
 import {
   CookieJar,
 } from 'tough-cookie';
-import type {
-  Request,
-} from 'puppeteer';
 import {
   serializeError,
 } from 'serialize-error';
@@ -27,10 +24,15 @@ const log = Logger.child({
   namespace: 'createPageProxy',
 });
 
-export default (configuration: PageProxyConfigurationType): PageProxyType => {
-  const page = configuration.page;
+export default (pageProxyConfiguration: PageProxyConfigurationType): PageProxyType => {
+  const page = pageProxyConfiguration.page;
 
-  const proxyRequest = async (request: Request, proxyUrl: string) => {
+  const proxyRequest = async (proxyRequestConfiguration) => {
+    const {
+      proxyUrl,
+      request,
+    } = proxyRequestConfiguration;
+
     log.debug({
       body: request.postData(),
       headers: request.headers(),

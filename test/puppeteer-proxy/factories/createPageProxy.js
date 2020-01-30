@@ -13,7 +13,10 @@ const MINUTE = 60 * 1000;
 const proxyRequest = (page, pageProxy, proxyUrl) => {
   page.on('request', async (request) => {
     try {
-      await pageProxy.proxyRequest(request, proxyUrl);
+      await pageProxy.proxyRequest({
+        proxyUrl,
+        request,
+      });
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log('proxy request error', error);
