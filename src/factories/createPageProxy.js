@@ -13,6 +13,7 @@ import {
   getAllCookies,
 } from '../routines';
 import type {
+  HeadersType,
   PageProxyConfigurationType,
   PageProxyType,
 } from '../types';
@@ -24,6 +25,27 @@ const log = Logger.child({
   namespace: 'createPageProxy',
 });
 
+const defaultChromeHeaders = {
+  accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+  'accept-encoding': 'gzip, deflate',
+  'accept-language': 'en',
+  'cache-control': 'no-cache',
+  connection: 'keep-alive',
+  dnt: '1',
+  pragma: 'no-cache',
+};
+
+/**
+ * @see https://github.com/puppeteer/puppeteer/issues/5364
+ */
+const appendDefaultChromeHeaders = (requestHeaders: HeadersType, requestUrl: string) => {
+  return {
+    ...requestHeaders,
+    ...defaultChromeHeaders,
+    host: new URL(requestUrl).hostname,
+  };
+};
+
 export default (pageProxyConfiguration: PageProxyConfigurationType): PageProxyType => {
   const page = pageProxyConfiguration.page;
 
@@ -33,9 +55,14 @@ export default (pageProxyConfiguration: PageProxyConfigurationType): PageProxyTy
       request,
     } = proxyRequestConfiguration;
 
+    const headers = appendDefaultChromeHeaders(
+      request.headers(),
+      request.url(),
+    );
+
     log.debug({
       body: request.postData(),
-      headers: request.headers(),
+      headers,
       method: request.method(),
       url: request.url(),
     }, 'making a request using HTTP proxy');
@@ -63,7 +90,7 @@ export default (pageProxyConfiguration: PageProxyConfigurationType): PageProxyTy
         agent,
         body: request.postData(),
         cookieJar,
-        headers: request.headers(),
+        headers,
         method: request.method(),
         responseType: 'buffer',
         retry: 0,

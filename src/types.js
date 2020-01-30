@@ -13,6 +13,11 @@ import type {
   Request,
 } from 'puppeteer';
 
+export type HeadersType = {
+  +[key: string]: string,
+  ...
+};
+
 /**
  * @property page Instance of Puppeteer Page.
  */
