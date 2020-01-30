@@ -15,11 +15,16 @@ import HttpsProxyAgent from 'https-proxy-agent';
 import {
   parseString,
 } from 'set-cookie-parser';
+import {
+  getAllCookies,
+} from '../routines';
 import type {
   PageProxyConfigurationType,
   PageProxyType,
 } from '../types';
 import Logger from '../Logger';
+import createToughCookiePayloadFromPuppeteerCookies from './createToughCookiePayloadFromPuppeteerCookies';
+import createPuppeteerCookiesFromToughCookiePayload from './createPuppeteerCookiesFromToughCookiePayload';
 
 const log = Logger.child({
   namespace: 'createPageProxy',
@@ -29,8 +34,6 @@ export default (configuration: PageProxyConfigurationType): PageProxyType => {
   const page = configuration.page;
   const proxyUrl = configuration.proxyUrl;
 
-  const cookieJar = new CookieJar();
-
   const proxyRequest = async (request: Request) => {
     log.debug({
       body: request.postData(),
@@ -38,6 +41,12 @@ export default (configuration: PageProxyConfigurationType): PageProxyType => {
       method: request.method(),
       url: request.url(),
     }, 'making a request using HTTP proxy');
+
+    const cookieJar = CookieJar.deserializeSync(
+      createToughCookiePayloadFromPuppeteerCookies(
+        (await getAllCookies(page)).cookies,
+      ),
+    );
 
     const AgentConstructor = proxyUrl.toLowerCase().startsWith('https://') ? HttpsProxyAgent : HttpProxyAgent;
 
@@ -69,21 +78,9 @@ export default (configuration: PageProxyConfigurationType): PageProxyType => {
       throw new Error('response object is not present.');
     }
 
-    const setCookieHeaders = response.headers['set-cookie'] || [];
-
-    for (const setCookieHeader of setCookieHeaders) {
-      const cookie = parseString(setCookieHeader);
-
-      await page.setCookie({
-        domain: cookie.domain || new URL(response.url).hostname,
-        expires: cookie.expires && cookie.expires.toString(),
-        httpOnly: cookie.httpOnly,
-        name: cookie.name,
-        path: cookie.path,
-        secure: cookie.secure,
-        value: cookie.value,
-      });
-    }
+    await page.setCookie(
+      ...createPuppeteerCookiesFromToughCookiePayload(cookieJar.serializeSync()),
+    );
 
     await request.respond({
       body: response.body,

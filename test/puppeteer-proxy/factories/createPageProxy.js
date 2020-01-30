@@ -8,6 +8,19 @@ import createHttpProxyServer from '../../helpers/createHttpProxyServer';
 import createHttpServer from '../../helpers/createHttpServer';
 import createPage from '../../helpers/createPage';
 
+const proxyRequest = (page, pageProxy) => {
+  page.on('request', async (request) => {
+    try {
+      await pageProxy.proxyRequest(request);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log('proxy request error', error);
+
+      request.abort();
+    }
+  });
+};
+
 test('makes a HTTP request (without proxy)', async (t) => {
   t.plan(2);
 
@@ -45,9 +58,7 @@ test('proxies a GET request', async (t) => {
 
     await page.setRequestInterception(true);
 
-    page.once('request', async (request) => {
-      await pageProxy.proxyRequest(request);
-    });
+    proxyRequest(page, pageProxy);
 
     const response = await page.goto(httpServer.url);
 
@@ -68,9 +79,7 @@ test('handles HTTP errors (unreachable server)', async (t) => {
 
     await page.setRequestInterception(true);
 
-    page.once('request', async (request) => {
-      await pageProxy.proxyRequest(request);
-    });
+    proxyRequest(page, pageProxy);
 
     const error = await t.throwsAsync(page.goto('http://127.0.0.1'));
 
@@ -79,7 +88,7 @@ test('handles HTTP errors (unreachable server)', async (t) => {
 });
 
 test('sets cookies for the succeeding proxy requests', async (t) => {
-  t.plan(2);
+  t.plan(4);
 
   const requestHandler = sinon.stub()
     .onCall(0)
@@ -106,11 +115,25 @@ test('sets cookies for the succeeding proxy requests', async (t) => {
 
     await page.setRequestInterception(true);
 
-    page.on('request', async (request) => {
-      await pageProxy.proxyRequest(request);
-    });
+    proxyRequest(page, pageProxy);
+
+    t.deepEqual(await page.cookies(), []);
 
     await page.goto(httpServer.url);
+
+    t.deepEqual(await page.cookies(), [
+      {
+        domain: 'localhost',
+        expires: -1,
+        httpOnly: false,
+        name: 'foo',
+        path: '/',
+        secure: false,
+        session: true,
+        size: 6,
+        value: 'bar',
+      },
+    ]);
 
     await page.goto(httpServer.url);
   });
@@ -118,5 +141,39 @@ test('sets cookies for the succeeding proxy requests', async (t) => {
   t.is(requestHandler.callCount, 2);
 });
 
-// eslint-disable-next-line ava/no-todo-test
-test.todo('inherits cookies from Page object');
+test('inherits cookies from Page object', async (t) => {
+  t.plan(2);
+
+  const requestHandler = sinon
+    .stub()
+    .callsFake((incomingRequest, outgoingRequest) => {
+      t.is(incomingRequest.headers.cookie, 'foo=bar');
+
+      outgoingRequest.end('foo');
+    });
+
+  const httpServer = await createHttpServer(requestHandler);
+
+  const httpProxyServer = await createHttpProxyServer();
+
+  await createPage(async (page) => {
+    await page.setCookie({
+      domain: 'localhost',
+      name: 'foo',
+      value: 'bar',
+    });
+
+    const pageProxy = createPageProxy({
+      page,
+      proxyUrl: httpProxyServer.url,
+    });
+
+    await page.setRequestInterception(true);
+
+    proxyRequest(page, pageProxy);
+
+    await page.goto(httpServer.url);
+  });
+
+  t.is(requestHandler.callCount, 1);
+});
