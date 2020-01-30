@@ -90,6 +90,7 @@ export default (pageProxyConfiguration: PageProxyConfigurationType): PageProxyTy
         agent,
         body: request.postData(),
         cookieJar,
+        followRedirect: false,
         headers,
         method: request.method(),
         responseType: 'buffer',
