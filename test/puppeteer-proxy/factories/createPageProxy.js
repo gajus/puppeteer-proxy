@@ -51,7 +51,7 @@ test('makes a HTTP request (without proxy)', async (t) => {
 });
 
 test('proxies a GET request', async (t) => {
-  t.plan(2);
+  t.plan(3);
 
   const requestHandler = sinon.stub().callsFake((incomingRequest, outgoingRequest) => {
     outgoingRequest.end('foo');
@@ -74,12 +74,55 @@ test('proxies a GET request', async (t) => {
       httpProxyServer.url,
     );
 
-    const response = await page.goto(httpServer.url);
+    const response = await page.goto(httpServer.url + '/foo');
 
     t.is((await response.headers())['x-foo'], 'bar');
+
+    t.is(await page.url(), httpServer.url + '/foo');
   });
 
   t.true(requestHandler.called);
+});
+
+test('Puppeteer handles redirects', async (t) => {
+  t.plan(1);
+
+  let requestIndex = 0;
+
+  const requestHandler = sinon
+    .stub()
+    .callsFake((incomingRequest, outgoingRequest) => {
+      if (++requestIndex < 3) {
+        outgoingRequest.writeHead(301, {
+          location: '/' + requestIndex,
+        });
+        outgoingRequest.end();
+      } else {
+        outgoingRequest.end(String(requestIndex));
+      }
+    });
+
+  const httpServer = await createHttpServer(requestHandler);
+
+  const httpProxyServer = await createHttpProxyServer();
+
+  await createPage(async (page) => {
+    const pageProxy = createPageProxy({
+      page,
+    });
+
+    await page.setRequestInterception(true);
+
+    proxyRequest(
+      page,
+      pageProxy,
+      httpProxyServer.url,
+    );
+
+    await page.goto(httpServer.url);
+  });
+
+  t.is(requestHandler.callCount, 3);
 });
 
 test('handles HTTP errors (unreachable server)', async (t) => {
