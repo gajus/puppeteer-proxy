@@ -9,6 +9,11 @@
 
 Proxies [Puppeteer](https://github.com/puppeteer/puppeteer) Page requests.
 
+* Allows to change proxy per Page and per Request.
+* Allows to authenticate using http://username:password@proxy schema.
+* Handles cookies.
+* Handles binary files.
+
 <a name="puppeteer-proxy-motivation"></a>
 ## Motivation
 
