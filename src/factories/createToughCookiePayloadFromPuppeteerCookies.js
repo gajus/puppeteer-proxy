@@ -10,9 +10,9 @@ export default (cookies: $ReadOnlyArray<PuppeteerCookieType>): ToughCookiePayloa
     cookies: cookies.map((cookie) => {
       return {
         creation: new Date().toISOString(),
-        domain: cookie.domain,
+        domain: cookie.domain.replace(/^\./, ''),
         expires: cookie.expires === -1 ? Infinity : new Date(cookie.expires * 1000).toISOString(),
-        hostOnly: true,
+        hostOnly: !cookie.domain.startsWith('.'),
         httpOnly: cookie.httpOnly,
         key: cookie.name,
         lastAccessed: new Date().toISOString(),
