@@ -88,6 +88,16 @@ export default (pageProxyConfiguration: PageProxyConfigurationType): PageProxyTy
   };
 
   return {
-    proxyRequest,
+    proxyRequest: async (configuration) => {
+      try {
+        await proxyRequest(configuration);
+      } catch (error) {
+        log.error({
+          error: serializeError(error),
+        }, 'could not proxy request due to an error');
+
+        configuration.request.abort();
+      }
+    },
   };
 };
