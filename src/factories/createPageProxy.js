@@ -59,6 +59,7 @@ export default (pageProxyConfiguration: PageProxyConfigurationType): PageProxyTy
         cookieJar,
         headers: request.headers(),
         method: request.method(),
+        responseType: 'buffer',
         retry: 0,
         throwHttpErrors: false,
       });

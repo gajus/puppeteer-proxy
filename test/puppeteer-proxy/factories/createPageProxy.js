@@ -1,5 +1,6 @@
 // @flow
 
+import crypto from 'crypto';
 import test from 'ava';
 import sinon from 'sinon';
 import getPort from 'get-port';
@@ -7,6 +8,7 @@ import createPageProxy from '../../../src/factories/createPageProxy';
 import createHttpProxyServer from '../../helpers/createHttpProxyServer';
 import createHttpServer from '../../helpers/createHttpServer';
 import createPage from '../../helpers/createPage';
+import downloadBlob from '../../helpers/downloadBlob';
 
 const MINUTE = 60 * 1000;
 
@@ -289,4 +291,39 @@ test('inherits cookies from Page object (correctly handles cookie expiration)', 
   });
 
   t.is(requestHandler.callCount, 1);
+});
+
+test('downloads a binary file', async (t) => {
+  t.plan(2);
+
+  const subject = crypto.randomBytes(256);
+
+  const requestHandler = sinon.stub().callsFake((incomingRequest, outgoingRequest) => {
+    outgoingRequest.setHeader('access-control-allow-origin', '*');
+    outgoingRequest.end(subject);
+  });
+
+  const httpServer = await createHttpServer(requestHandler);
+
+  const httpProxyServer = await createHttpProxyServer();
+
+  await createPage(async (page) => {
+    const pageProxy = createPageProxy({
+      page,
+    });
+
+    await page.setRequestInterception(true);
+
+    proxyRequest(
+      page,
+      pageProxy,
+      httpProxyServer.url,
+    );
+
+    const blob = await downloadBlob(page, httpServer.url);
+
+    t.true(blob.equals(subject));
+  });
+
+  t.true(requestHandler.called);
 });
