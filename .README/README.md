@@ -46,12 +46,12 @@ type PageProxyConfigurationType = {|
 |};
 
 /**
- * @property request Instance of Puppeteer Request.
  * @property proxyUrl HTTP proxy URL. A different proxy can be set for each request.
+ * @property request Instance of Puppeteer Request.
  */
 type ProxyRequestConfigurationType = {|
-  +request: Request,
   +proxyUrl: string,
+  +request: Request,
 |};
 
 type PageProxyType = {|
@@ -82,8 +82,8 @@ import {
 
   page.once('request', async (request) => {
     await pageProxy.proxyRequest({
-      request,
       proxyUrl: 'http://127.0.0.1:3000',
+      request,
     });
   });
 
