@@ -77,9 +77,9 @@ export default (pageProxyConfiguration: PageProxyConfigurationType): PageProxyTy
 
     if (proxyRequestConfiguration.agent) {
       agent = proxyRequestConfiguration.agent;
-    } else if (proxyUrl.toLowerCase().startsWith('https://')) {
+    } else if (proxyUrl && proxyUrl.toLowerCase().startsWith('https://')) {
       agent = new HttpsProxyAgent(proxyUrl);
-    } else {
+    } else if (proxyUrl) {
       agent = new HttpProxyAgent(proxyUrl);
     }
 
