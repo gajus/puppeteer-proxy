@@ -86,7 +86,7 @@ import {
 
   await page.setRequestInterception(true);
 
-  page.once('request', async (request) => {
+  page.on('request', async (request) => {
     await pageProxy.proxyRequest({
       proxyUrl: 'http://127.0.0.1:3000',
       request,
