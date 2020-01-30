@@ -9,6 +9,18 @@
 
 Proxies [Puppeteer](https://github.com/puppeteer/puppeteer) Page requests.
 
+<a name="puppeteer-proxy-motivation"></a>
+## Motivation
+
+This package addresses several issues with Puppeteer:
+
+* It allows to set a proxy per Page and per Request ([#678](https://github.com/puppeteer/puppeteer/issues/678))
+* It allows to authenticate against proxy when making HTTPS requests ([#3253](https://github.com/puppeteer/puppeteer/issues/3253))
+
+The side-benefit of this [implementation](#implementation) is that it allows to route all traffic through Node.js, i.e. you can use externally hosted Chrome instance (such as [Browserless.io](https://www.browserless.io/)) to render DOM & evaluate JavaScript, and route all HTTP traffic through your Node.js instance.
+
+The downside of this implementation is that it will introduce additional latency, i.e. requests will take longer to execute as request/ response will need to be always exchanged between Puppeteer and Node.js.
+
 <a name="puppeteer-proxy-implementation"></a>
 ## Implementation
 
@@ -38,15 +50,17 @@ type PageProxyConfigurationType = {|
   +page: Page,
 |};
 
+/**
+ * @property request Instance of Puppeteer Request.
+ * @property proxyUrl HTTP proxy URL. A different proxy can be set for each request.
+ */
+type ProxyRequestConfigurationType = {|
+  +request: Request,
+  +proxyUrl: string,
+|};
+
 type PageProxyType = {|
-  /**
-   * @param request Instance of Puppeteer Request.
-   * @param proxyUrl HTTP proxy URL. A different proxy can be set for each request.
-   */
-  +proxyRequest: (
-    request: Request,
-    proxyUrl: string,
-  ) => Promise<void>,
+  +proxyRequest: (configuration: ProxyRequestConfigurationType) => Promise<void>,
 |};
 
 createPageProxy(configuration: PageProxyConfigurationType): PageProxyType;
@@ -68,16 +82,18 @@ import {
 
   const pageProxy = createPageProxy({
     page,
-    proxyUrl: 'http://127.0.0.1:3000',
   });
 
   await page.setRequestInterception(true);
 
   page.once('request', async (request) => {
-    await pageProxy.proxyRequest(request);
+    await pageProxy.proxyRequest({
+      request,
+      proxyUrl: 'http://127.0.0.1:3000',
+    });
   });
 
-  await page.goto('https://example.com');
+  await page.goto('http://gajus.com');
 })();
 
 ```
