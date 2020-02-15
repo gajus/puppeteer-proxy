@@ -180,6 +180,61 @@ test('sets cookies for the succeeding proxy requests', async (t) => {
   t.is(requestHandler.callCount, 2);
 });
 
+test('sets cookies for the succeeding proxy requests (ignores invalid cookies)', async (t) => {
+  t.plan(4);
+
+  const requestHandler = sinon.stub()
+    .onCall(0)
+    .callsFake((incomingRequest, outgoingRequest) => {
+      outgoingRequest.setHeader('set-cookie', ['foo=bar;', '( ) < > @ , ; : \\ " / [ ] ? = { }bar=baz']);
+      outgoingRequest.end('foo');
+    })
+    .onCall(1)
+    .callsFake((incomingRequest, outgoingRequest) => {
+      t.is(incomingRequest.headers.cookie, 'foo=bar');
+
+      outgoingRequest.end('bar');
+    });
+
+  const httpServer = await createHttpServer(requestHandler);
+
+  const httpProxyServer = await createHttpProxyServer();
+
+  await createPage(async (page) => {
+    await page.setRequestInterception(true);
+
+    page.on('request', async (request) => {
+      await proxyRequest({
+        page,
+        proxyUrl: httpProxyServer.url,
+        request,
+      });
+    });
+
+    t.deepEqual(await page.cookies(), []);
+
+    await page.goto(httpServer.url);
+
+    t.deepEqual(await page.cookies(), [
+      {
+        domain: 'localhost',
+        expires: -1,
+        httpOnly: false,
+        name: 'foo',
+        path: '/',
+        secure: false,
+        session: true,
+        size: 6,
+        value: 'bar',
+      },
+    ]);
+
+    await page.goto(httpServer.url);
+  });
+
+  t.is(requestHandler.callCount, 2);
+});
+
 test('sets cookies for the succeeding proxy requests (correctly handles cookie expiration)', async (t) => {
   t.plan(4);
 

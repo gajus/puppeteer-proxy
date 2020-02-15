@@ -1,5 +1,8 @@
 // @flow
 
+import {
+  promisify,
+} from 'util';
 import type {
   Request,
 } from 'puppeteer';
@@ -13,8 +16,8 @@ import {
 import HttpProxyAgent from 'http-proxy-agent';
 import HttpsProxyAgent from 'https-proxy-agent';
 import {
-  createToughCookiePayloadFromPuppeteerCookies,
-} from '../factories';
+  formatPuppeteerCookieAsToughCookie,
+} from '../utilities';
 import type {
   ProxyRequestConfigurationType,
 } from '../types';
@@ -75,11 +78,34 @@ const proxyRequest = async (proxyRequestConfiguration: ProxyRequestConfiguration
     url: request.url(),
   }, 'making a request using HTTP proxy');
 
-  const cookieJar = CookieJar.deserializeSync(
-    createToughCookiePayloadFromPuppeteerCookies(
-      (await getAllCookies(page)).cookies,
-    ),
-  );
+  const puppeteerCookies = (await getAllCookies(page)).cookies;
+
+  const cookieJar = CookieJar.deserializeSync({
+    cookies: puppeteerCookies.map((puppeteerCookie) => {
+      return formatPuppeteerCookieAsToughCookie(puppeteerCookie);
+    }),
+    rejectPublicSuffixes: true,
+    storeType: 'MemoryCookieStore',
+    version: 'tough-cookie@2.0.0',
+  });
+
+  const getCookieString = promisify(cookieJar.getCookieString.bind(cookieJar));
+  const setCookie = promisify(cookieJar.setCookie.bind(cookieJar));
+
+  const gotCookieJar = {
+    getCookieString: async (url) => {
+      return getCookieString(url);
+    },
+    setCookie: async (rawCookie: string, url: string) => {
+      return setCookie(
+        rawCookie,
+        url,
+        {
+          ignoreError: true,
+        },
+      );
+    },
+  };
 
   let agent;
 
@@ -97,7 +123,7 @@ const proxyRequest = async (proxyRequestConfiguration: ProxyRequestConfiguration
     response = await got(request.url(), {
       agent,
       body: request.postData(),
-      cookieJar,
+      cookieJar: gotCookieJar,
       followRedirect: false,
       headers,
       method: request.method(),

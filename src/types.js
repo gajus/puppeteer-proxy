@@ -49,7 +49,7 @@ export type PuppeteerCookieType = {|
   +value: string,
 |};
 
-type ToughCookieCookiePayloadType = {|
+export type ToughCookiePayloadType = {|
   +creation: string,
   +domain: string,
   +expires: number | string,
@@ -61,16 +61,3 @@ type ToughCookieCookiePayloadType = {|
   +secure: boolean,
   +value: string,
 |};
-
-/**
- * Serialized instance of a `tough-cookie` `CookieJar`.
- *
- * @see https://www.npmjs.com/package/tough-cookie#tojson
- */
-export type ToughCookiePayloadType = {|
-  +cookies: $ReadOnlyArray<ToughCookieCookiePayloadType>,
-  +rejectPublicSuffixes: boolean,
-  +storeType: 'MemoryCookieStore',
-  +version: string,
-|};
-
