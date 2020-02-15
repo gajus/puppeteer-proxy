@@ -19,25 +19,16 @@ export type HeadersType = {
 };
 
 /**
- * @property page Instance of Puppeteer Page.
- */
-export type PageProxyConfigurationType = {|
-  +page: Page,
-|};
-
-/**
  * @property agent HTTP(s) agent to use when making the request.
+ * @property page Instance of Puppeteer Page.
  * @property proxyUrl HTTP proxy URL. A different proxy can be set for each request.
  * @property request Instance of Puppeteer Request.
  */
 export type ProxyRequestConfigurationType = {|
   +agent?: HttpAgent | HttpsAgent,
+  +page: Page,
   +proxyUrl?: string,
   +request: Request,
-|};
-
-export type PageProxyType = {|
-  +proxyRequest: (configuration: ProxyRequestConfigurationType) => Promise<void>,
 |};
 
 /**

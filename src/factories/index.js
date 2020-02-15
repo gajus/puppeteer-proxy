@@ -1,3 +1,3 @@
 // @flow
 
-export {default as createPageProxy} from './createPageProxy';
+export {default as createToughCookiePayloadFromPuppeteerCookies} from './createToughCookiePayloadFromPuppeteerCookies';

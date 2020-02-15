@@ -1,5 +1,5 @@
 // @flow
 
 export {
-  createPageProxy,
-} from './factories';
+  proxyRequest,
+} from './routines';

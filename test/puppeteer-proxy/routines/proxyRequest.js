@@ -4,29 +4,13 @@ import crypto from 'crypto';
 import test from 'ava';
 import sinon from 'sinon';
 import getPort from 'get-port';
-import createPageProxy from '../../../src/factories/createPageProxy';
+import proxyRequest from '../../../src/routines/proxyRequest';
 import createHttpProxyServer from '../../helpers/createHttpProxyServer';
 import createHttpServer from '../../helpers/createHttpServer';
 import createPage from '../../helpers/createPage';
 import downloadBlob from '../../helpers/downloadBlob';
 
 const MINUTE = 60 * 1000;
-
-const proxyRequest = (page, pageProxy, proxyUrl) => {
-  page.on('request', async (request) => {
-    try {
-      await pageProxy.proxyRequest({
-        proxyUrl,
-        request,
-      });
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log('proxy request error', error);
-
-      request.abort();
-    }
-  });
-};
 
 const roundToMinute = (time: number): number => {
   return Math.round(time / MINUTE) * MINUTE;
@@ -62,17 +46,15 @@ test('proxies a GET request', async (t) => {
   const httpProxyServer = await createHttpProxyServer();
 
   await createPage(async (page) => {
-    const pageProxy = createPageProxy({
-      page,
-    });
-
     await page.setRequestInterception(true);
 
-    proxyRequest(
-      page,
-      pageProxy,
-      httpProxyServer.url,
-    );
+    page.on('request', async (request) => {
+      await proxyRequest({
+        page,
+        proxyUrl: httpProxyServer.url,
+        request,
+      });
+    });
 
     const response = await page.goto(httpServer.url + '/foo');
 
@@ -107,17 +89,15 @@ test('Puppeteer handles redirects', async (t) => {
   const httpProxyServer = await createHttpProxyServer();
 
   await createPage(async (page) => {
-    const pageProxy = createPageProxy({
-      page,
-    });
-
     await page.setRequestInterception(true);
 
-    proxyRequest(
-      page,
-      pageProxy,
-      httpProxyServer.url,
-    );
+    page.on('request', async (request) => {
+      await proxyRequest({
+        page,
+        proxyUrl: httpProxyServer.url,
+        request,
+      });
+    });
 
     await page.goto(httpServer.url);
   });
@@ -129,17 +109,15 @@ test('handles HTTP errors (unreachable server)', async (t) => {
   t.plan(2);
 
   await createPage(async (page) => {
-    const pageProxy = createPageProxy({
-      page,
-    });
-
     await page.setRequestInterception(true);
 
-    proxyRequest(
-      page,
-      pageProxy,
-      'http://127.0.0.1:' + await getPort(),
-    );
+    page.on('request', async (request) => {
+      await proxyRequest({
+        page,
+        proxyUrl: 'http://127.0.0.1:' + await getPort(),
+        request,
+      });
+    });
 
     const error = await t.throwsAsync(page.goto('http://127.0.0.1'));
 
@@ -168,17 +146,15 @@ test('sets cookies for the succeeding proxy requests', async (t) => {
   const httpProxyServer = await createHttpProxyServer();
 
   await createPage(async (page) => {
-    const pageProxy = createPageProxy({
-      page,
-    });
-
     await page.setRequestInterception(true);
 
-    proxyRequest(
-      page,
-      pageProxy,
-      httpProxyServer.url,
-    );
+    page.on('request', async (request) => {
+      await proxyRequest({
+        page,
+        proxyUrl: httpProxyServer.url,
+        request,
+      });
+    });
 
     t.deepEqual(await page.cookies(), []);
 
@@ -227,17 +203,15 @@ test('sets cookies for the succeeding proxy requests (correctly handles cookie e
   const httpProxyServer = await createHttpProxyServer();
 
   await createPage(async (page) => {
-    const pageProxy = createPageProxy({
-      page,
-    });
-
     await page.setRequestInterception(true);
 
-    proxyRequest(
-      page,
-      pageProxy,
-      httpProxyServer.url,
-    );
+    page.on('request', async (request) => {
+      await proxyRequest({
+        page,
+        proxyUrl: httpProxyServer.url,
+        request,
+      });
+    });
 
     t.deepEqual(await page.cookies(), []);
 
@@ -275,17 +249,15 @@ test('inherits cookies from Page object', async (t) => {
       value: 'bar',
     });
 
-    const pageProxy = createPageProxy({
-      page,
-    });
-
     await page.setRequestInterception(true);
 
-    proxyRequest(
-      page,
-      pageProxy,
-      httpProxyServer.url,
-    );
+    page.on('request', async (request) => {
+      await proxyRequest({
+        page,
+        proxyUrl: httpProxyServer.url,
+        request,
+      });
+    });
 
     await page.goto(httpServer.url);
   });
@@ -318,17 +290,15 @@ test('inherits cookies from Page object (correctly handles cookie expiration)', 
       value: 'bar',
     });
 
-    const pageProxy = createPageProxy({
-      page,
-    });
-
     await page.setRequestInterception(true);
 
-    proxyRequest(
-      page,
-      pageProxy,
-      httpProxyServer.url,
-    );
+    page.on('request', async (request) => {
+      await proxyRequest({
+        page,
+        proxyUrl: httpProxyServer.url,
+        request,
+      });
+    });
 
     await page.goto(httpServer.url);
   });
@@ -351,17 +321,15 @@ test('downloads a binary file', async (t) => {
   const httpProxyServer = await createHttpProxyServer();
 
   await createPage(async (page) => {
-    const pageProxy = createPageProxy({
-      page,
-    });
-
     await page.setRequestInterception(true);
 
-    proxyRequest(
-      page,
-      pageProxy,
-      httpProxyServer.url,
-    );
+    page.on('request', async (request) => {
+      await proxyRequest({
+        page,
+        proxyUrl: httpProxyServer.url,
+        request,
+      });
+    });
 
     const blob = await downloadBlob(page, httpServer.url);
 

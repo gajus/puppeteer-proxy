@@ -1,4 +1,3 @@
-<a name="puppeteer-proxy"></a>
 # puppeteer-proxy 🎎
 
 [![Travis build status](http://img.shields.io/travis/gajus/puppeteer-proxy/master.svg?style=flat-square)](https://travis-ci.org/gajus/puppeteer-proxy)
@@ -15,7 +14,6 @@ Proxies [Puppeteer](https://github.com/puppeteer/puppeteer) Page requests.
 * Handles binary files.
 * Supports custom [HTTP(S) agents](https://nodejs.org/api/http.html#http_class_http_agent).
 
-<a name="puppeteer-proxy-motivation"></a>
 ## Motivation
 
 This package addresses several issues with Puppeteer:
@@ -27,17 +25,14 @@ The side-benefit of this [implementation](#implementation) is that it allows to 
 
 The downside of this implementation is that it will introduce additional latency, i.e. requests will take longer to execute as request/ response will need to be always exchanged between Puppeteer and Node.js.
 
-<a name="puppeteer-proxy-implementation"></a>
 ## Implementation
 
 puppeteer-proxy intercepts requests after it receives the request metadata from Puppeteer. puppeteer-proxy uses Node.js to make the HTTP requests. The response is then returned to the browser. When using puppeteer-proxy, browser never makes outbound HTTP requests.
 
-<a name="puppeteer-proxy-setup"></a>
 ## Setup
 
 You must call [`page.setRequestInterception(true)`](https://pptr.dev/#?product=Puppeteer&version=v2.1.0&show=api-pagesetrequestinterceptionvalue) before using `pageProxy.proxyRequest`.
 
-<a name="puppeteer-proxy-api"></a>
 ## API
 
 ```js
@@ -52,59 +47,45 @@ import type {
   Request,
 } from 'puppeteer';
 import {
-  createPageProxy,
+  proxyRequest,
 } from 'puppeteer-proxy';
 
 /**
- * @property page Instance of Puppeteer Page.
- */
-type PageProxyConfigurationType = {|
-  +page: Page,
-|};
-
-/**
  * @property agent HTTP(s) agent to use when making the request.
+ * @property page Instance of Puppeteer Page.
  * @property proxyUrl HTTP proxy URL. A different proxy can be set for each request.
  * @property request Instance of Puppeteer Request.
  */
 type ProxyRequestConfigurationType = {|
   +agent?: HttpAgent | HttpsAgent,
+  +page: Page,
   +proxyUrl?: string,
   +request: Request,
 |};
 
-type PageProxyType = {|
-  +proxyRequest: (configuration: ProxyRequestConfigurationType) => Promise<void>,
-|};
-
-createPageProxy(configuration: PageProxyConfigurationType): PageProxyType;
+proxyRequest(configuration: ProxyRequestConfigurationType): PageProxyType;
 
 ```
 
-<a name="puppeteer-proxy-usage"></a>
 ## Usage
 
-<a name="puppeteer-proxy-usage-making-a-get-request-using-proxy"></a>
 ### Making a GET request using proxy
 
 ```js
 import puppeteer from 'puppeteer';
 import {
-  createPageProxy,
+  proxyRequest,
 } from 'puppeteer-proxy';
 
 (async () => {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
 
-  const pageProxy = createPageProxy({
-    page,
-  });
-
   await page.setRequestInterception(true);
 
   page.on('request', async (request) => {
-    await pageProxy.proxyRequest({
+    await proxyRequest({
+      page,
       proxyUrl: 'http://127.0.0.1:3000',
       request,
     });
