@@ -69,6 +69,13 @@ const proxyRequest = async (proxyRequestConfiguration: ProxyRequestConfiguration
     request,
   } = proxyRequestConfiguration;
 
+  // e.g. data URI scheme
+  if (!request.url().startsWith('http://') || !request.url().startsWith('https://')) {
+    request.continue();
+
+    return;
+  }
+
   const headers = appendDefaultChromeHeaders(request);
 
   log.debug({
