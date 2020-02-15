@@ -70,7 +70,7 @@ const proxyRequest = async (proxyRequestConfiguration: ProxyRequestConfiguration
   } = proxyRequestConfiguration;
 
   // e.g. data URI scheme
-  if (!request.url().startsWith('http://') || !request.url().startsWith('https://')) {
+  if (!request.url().startsWith('http://') && !request.url().startsWith('https://')) {
     request.continue();
 
     return;
