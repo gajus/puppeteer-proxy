@@ -118,10 +118,11 @@ const proxyRequest = async (proxyRequestConfiguration: ProxyRequestConfiguration
 
   if (proxyRequestConfiguration.agent) {
     agent = proxyRequestConfiguration.agent;
-  } else if (proxyUrl && request.url().toLowerCase().startsWith('https://')) {
-    agent = new HttpsProxyAgent(proxyUrl);
   } else if (proxyUrl) {
-    agent = new HttpProxyAgent(proxyUrl);
+    agent = {
+      http: new HttpProxyAgent(proxyUrl),
+      https: new HttpsProxyAgent(proxyUrl),
+    };
   }
 
   let response;
