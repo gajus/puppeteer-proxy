@@ -29,6 +29,7 @@ export type ProxyRequestConfigurationType = {|
   +page: Page,
   +proxyUrl?: string,
   +request: Request,
+  +followRedirect?: boolean,
 |};
 
 /**

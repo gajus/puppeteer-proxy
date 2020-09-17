@@ -67,6 +67,7 @@ const proxyRequest = async (proxyRequestConfiguration: ProxyRequestConfiguration
     page,
     proxyUrl,
     request,
+    followRedirect = false,
   } = proxyRequestConfiguration;
 
   // e.g. data URI scheme
@@ -132,7 +133,7 @@ const proxyRequest = async (proxyRequestConfiguration: ProxyRequestConfiguration
       agent,
       body: request.postData(),
       cookieJar: gotCookieJar,
-      followRedirect: false,
+      followRedirect,
       headers,
       method: request.method(),
       responseType: 'buffer',
