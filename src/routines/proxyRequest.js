@@ -120,8 +120,8 @@ const proxyRequest = async (proxyRequestConfiguration: ProxyRequestConfiguration
     agent = proxyRequestConfiguration.agent;
   } else if (proxyUrl) {
     agent = {
-      http: new HttpProxyAgent(proxyUrl),
-      https: new HttpsProxyAgent(proxyUrl),
+      http: new HttpProxyAgent(proxyUrl.http || proxyUrl),
+      https: new HttpsProxyAgent(proxyUrl.https || proxyUrl),
     };
   }
 

@@ -18,6 +18,11 @@ export type HeadersType = {
   ...
 };
 
+interface ProxyUrl {
+  http?: string,
+  https?: string,
+}
+
 /**
  * @property agent HTTP(s) agent to use when making the request.
  * @property page Instance of Puppeteer Page.
@@ -27,7 +32,7 @@ export type HeadersType = {
 export type ProxyRequestConfigurationType = {|
   +agent?: HttpAgent | HttpsAgent,
   +page: Page,
-  +proxyUrl?: string,
+  +proxyUrl?: string | ProxyUrl,
   +request: Request,
 |};
 
