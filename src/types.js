@@ -13,15 +13,15 @@ import type {
   Request,
 } from 'puppeteer';
 
+export interface ProxyUrl {
+  http?: string,
+  https?: string,
+}
+
 export type HeadersType = {
   +[key: string]: string,
   ...
 };
-
-interface ProxyUrl {
-  http?: string,
-  https?: string,
-}
 
 /**
  * @property agent HTTP(s) agent to use when making the request.
@@ -32,7 +32,7 @@ interface ProxyUrl {
 export type ProxyRequestConfigurationType = {|
   +agent?: HttpAgent | HttpsAgent,
   +page: Page,
-  +proxyUrl?: string | ProxyUrl,
+  +proxyUrl?: ProxyUrl | string,
   +request: Request,
 |};
 
