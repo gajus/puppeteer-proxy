@@ -66,7 +66,7 @@ test('proxies a GET request', async (t) => {
   t.true(requestHandler.called);
 });
 
-test('specify HTTP and HTTP proxy', async (t) => {
+test('specify HTTP and HTTPS proxy', async (t) => {
   t.plan(3);
 
   const requestHandler = sinon.stub().callsFake((incomingRequest, outgoingRequest) => {
