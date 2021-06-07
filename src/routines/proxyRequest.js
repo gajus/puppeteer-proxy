@@ -100,10 +100,10 @@ const proxyRequest = async (proxyRequestConfiguration: ProxyRequestConfiguration
   const setCookie = promisify(cookieJar.setCookie.bind(cookieJar));
 
   const gotCookieJar = {
-    getCookieString: async (url) => {
+    getCookieString: (url) => {
       return getCookieString(url);
     },
-    setCookie: async (rawCookie: string, url: string) => {
+    setCookie: (rawCookie: string, url: string) => {
       return setCookie(
         rawCookie,
         url,
@@ -120,8 +120,8 @@ const proxyRequest = async (proxyRequestConfiguration: ProxyRequestConfiguration
     agent = proxyRequestConfiguration.agent;
   } else if (proxyUrl) {
     agent = {
-      http: new HttpProxyAgent(proxyUrl),
-      https: new HttpsProxyAgent(proxyUrl),
+      http: new HttpProxyAgent(proxyUrl.http || proxyUrl),
+      https: new HttpsProxyAgent(proxyUrl.https || proxyUrl),
     };
   }
 

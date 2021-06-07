@@ -66,6 +66,41 @@ test('proxies a GET request', async (t) => {
   t.true(requestHandler.called);
 });
 
+test('specify HTTP and HTTPS proxy', async (t) => {
+  t.plan(3);
+
+  const requestHandler = sinon.stub().callsFake((incomingRequest, outgoingRequest) => {
+    outgoingRequest.end('foo');
+  });
+
+  const httpServer = await createHttpServer(requestHandler);
+
+  const httpProxyServer = await createHttpProxyServer();
+
+  await createPage(async (page) => {
+    await page.setRequestInterception(true);
+
+    page.on('request', async (request) => {
+      await proxyRequest({
+        page,
+        proxyUrl: {
+          http: httpProxyServer.url,
+          https: httpProxyServer.url,
+        },
+        request,
+      });
+    });
+
+    const response = await page.goto(httpServer.url + '/foo');
+
+    t.is((await response.headers())['x-foo'], 'bar');
+
+    t.is(await page.url(), httpServer.url + '/foo');
+  });
+
+  t.true(requestHandler.called);
+});
+
 test('Puppeteer handles redirects', async (t) => {
   t.plan(1);
 

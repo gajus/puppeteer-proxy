@@ -59,7 +59,7 @@ import {
 type ProxyRequestConfigurationType = {|
   +agent?: HttpAgent | HttpsAgent,
   +page: Page,
-  +proxyUrl?: string,
+  +proxyUrl?: string | { http: string, https: string },
   +request: Request,
 |};
 
