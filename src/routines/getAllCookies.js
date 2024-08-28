@@ -7,5 +7,6 @@ import type {Page} from 'puppeteer';
  */
 export default (page: Page) => {
   const client = typeof page._client === 'function' ? page._client() : page._client;
+
   return client.send('Network.getAllCookies');
 };

@@ -3,5 +3,8 @@
     "canonical",
     "canonical/flowtype"
   ],
+  "rules": {
+    "import/no-named-as-default-member": 0
+  },
   "root": true
 }
