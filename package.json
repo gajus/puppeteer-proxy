@@ -56,11 +56,6 @@
   "engines": {
     "node": ">10"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run lint && npm run test && npm run build"
-    }
-  },
   "keywords": [
     "puppeteer",
     "proxy"
@@ -94,5 +89,5 @@
     "lint": "eslint ./src ./test && flow",
     "test": "NODE_ENV=test ava --verbose --serial"
   },
-  "version": "1.0.1"
+  "version": "1.0.2"
 }
